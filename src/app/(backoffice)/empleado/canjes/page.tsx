@@ -1,6 +1,9 @@
 import { CanjeForm } from "./components/canje-form";
+import { requireRole } from "@/lib/supabase/server";
 
-export default function CanjesPage() {
+export default async function CanjesPage() {
+  await requireRole("empleado");
+
   return (
     <section className="space-y-6">
       <div>

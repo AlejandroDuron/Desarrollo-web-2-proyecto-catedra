@@ -1,3 +1,5 @@
+import { requireRole } from "@/lib/supabase/server";
+
 const supervisionItems = [
   {
     empresa: "Cafe Aurora",
@@ -11,7 +13,9 @@ const supervisionItems = [
   },
 ];
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  await requireRole("admin_general");
+
   return (
     <section className="space-y-6">
       <div>

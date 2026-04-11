@@ -1,3 +1,5 @@
+﻿import { logoutAction } from "@/lib/auth/actions";
+import { requireAuthenticatedEmployee } from "@/lib/supabase/server";
 import type { Role } from "@/types/roles";
 
 const roleContent: Record<
@@ -9,44 +11,39 @@ const roleContent: Record<
     description: string;
   }
 > = {
-  admin: {
-    badge: "Administrador",
+  admin_general: {
+    badge: "Admin general",
     title: "Panel administrativo",
-    accent: "text-sky-700",
-    description: "Gestion general de empresas, clientes, ofertas y seguridad.",
+    accent: "text-lime-700",
+    description: "Gestion global de empresas, ofertas, clientes y seguridad.",
   },
-  empresa: {
-    badge: "Empresa",
-    title: "Panel de empresa ofertante",
+  admin_empresa: {
+    badge: "Admin empresa",
+    title: "Panel de empresa",
     accent: "text-emerald-700",
-    description: "Seguimiento de ofertas, empleados y configuracion del negocio.",
+    description: "Operacion interna de la empresa, su equipo y sus ofertas.",
   },
   empleado: {
     badge: "Empleado",
     title: "Panel operativo",
     accent: "text-amber-700",
-    description: "Registro de canjes y acceso a configuraciones de seguridad.",
+    description: "Canjes, validaciones operativas y ajustes basicos de seguridad.",
   },
 };
-
-async function getCurrentRole(): Promise<Role> {
-  // TODO: leer el rol real desde la tabla `profiles`.
-  return "admin";
-}
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const currentRole = await getCurrentRole();
-  const currentRoleContent = roleContent[currentRole];
+  const { user, empleado } = await requireAuthenticatedEmployee();
+  const currentRoleContent = roleContent[empleado.rol];
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div>
+    <div className="min-h-screen bg-[var(--surface)]">
+      <header className="border-b border-[var(--border)] bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
             <p
               className={`text-xs font-semibold uppercase tracking-[0.2em] ${currentRoleContent.accent}`}
             >
@@ -58,6 +55,21 @@ export default async function DashboardLayout({
             <p className="mt-1 text-sm text-slate-600">
               {currentRoleContent.description}
             </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm font-medium text-slate-900">{user.email}</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                {empleado.activo ? "Usuario activo" : "Usuario inactivo"}
+              </p>
+            </div>
+
+            <form action={logoutAction}>
+              <button className="btn btn-outline" type="submit">
+                Cerrar sesion
+              </button>
+            </form>
           </div>
         </div>
       </header>

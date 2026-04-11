@@ -1,10 +1,14 @@
+import { requireRole } from "@/lib/supabase/server";
+
 const monitoreoItems = [
   { indicador: "Canjes de hoy", valor: "28", estado: "Normal" },
   { indicador: "Ofertas activas", valor: "6", estado: "Atencion" },
   { indicador: "Empleados conectados", valor: "9", estado: "Normal" },
 ];
 
-export default function EmpresaPage() {
+export default async function EmpresaPage() {
+  await requireRole("admin_empresa");
+
   return (
     <section className="space-y-6">
       <div>
