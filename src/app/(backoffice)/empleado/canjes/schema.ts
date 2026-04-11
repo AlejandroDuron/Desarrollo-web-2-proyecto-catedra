@@ -1,11 +1,9 @@
 export interface CanjeFormValues {
   codigo: string;
-  cliente: string;
-  oferta: string;
+  dui: string;
 }
 
 export const canjeInitialValues: CanjeFormValues = {
   codigo: "",
-  cliente: "",
-  oferta: "",
+  dui: "",
 };
