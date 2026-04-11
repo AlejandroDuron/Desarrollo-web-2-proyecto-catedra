@@ -54,11 +54,16 @@ export function categorizarOferta(oferta: {
 export async function getEmpresa(id_empresa: string) {
   const supabase = await createSupabaseServerClient();
 
+  console.log(">>> Buscando empresa con id:", id_empresa);
+
   const { data, error } = await supabase
     .from("empresas")
     .select("nombre_empresa, porcentaje_comision")
     .eq("id", id_empresa)
     .single();
+
+    console.log(">>> data:", JSON.stringify(data));
+  console.log(">>> error:", JSON.stringify(error));
 
   if (error || !data) throw new Error("Empresa no encontrada.");
 

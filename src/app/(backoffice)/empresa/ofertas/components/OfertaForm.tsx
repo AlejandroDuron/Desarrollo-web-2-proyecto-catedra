@@ -121,14 +121,14 @@ export default function OfertaForm({ open, onClose }: OfertaFormProps) {
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Precio ($)" error={errors.precio}>
+                <Field label="Precio ($)" error={errors.precio_oferta}>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     placeholder="0.00"
-                    value={String(values.precio)}
-                    onChange={(e) => handleChange("precio", e.target.value)}
+                    value={String(values.precio_oferta)}
+                    onChange={(e) => handleChange("precio_oferta", e.target.value)}
                     className="input-field"
                   />
                 </Field>
@@ -201,7 +201,7 @@ export default function OfertaForm({ open, onClose }: OfertaFormProps) {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#454935] mb-1">Resumen</p>
                 <Row label="Título"       value={String(values.titulo)} />
                 <Row label="Descripción"  value={String(values.descripcion)} />
-                <Row label="Precio"       value={`$${values.precio}`} />
+                <Row label="Precio"       value={`$${values.precio_oferta}`} />
                 <Row label="Cupones"      value={String(values.total_cupones)} />
                 <Row label="Inicio"       value={String(values.fecha_inicio)} />
                 <Row label="Fin"          value={String(values.fecha_fin)} />
