@@ -1,16 +1,30 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import EmpresaForm from "./components/empresa-form";
-import DeleteEmpresaButton from "./components/delete-button";
+import PlaceholderCover from "../components/placeholder-cover";
+import GlobalPagination from "../components/global-pagination";
 
-export default async function EmpresasPage() {
+const PER_PAGE = 10;
+
+export default async function EmpresasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const currentPage = Number(resolvedParams?.page) || 1;
+  const from = (currentPage - 1) * PER_PAGE;
+  const to = from + PER_PAGE - 1;
+
   const supabase = await createSupabaseServerClient();
-  
+
   const [empresasRes, rubrosRes] = await Promise.all([
-    supabase.from("empresas").select("*, rubros(nombre_rubro)").order("created_at", { ascending: false }),
+    supabase.from("empresas").select("*, rubros(nombre_rubro)", { count: "exact" }).order("created_at", { ascending: false }).range(from, to),
     supabase.from("rubros").select("*").order("nombre_rubro", { ascending: true })
   ]);
 
   const empresas = empresasRes.data;
+  const totalCount = empresasRes.count || 0;
   const error = empresasRes.error || rubrosRes.error;
   const rubrosDisponibles = rubrosRes.data || [];
 
@@ -36,57 +50,46 @@ export default async function EmpresasPage() {
         <EmpresaForm rubrosDisponibles={rubrosDisponibles} />
       </div>
 
-      <div className="card bg-[var(--bg)] p-1">
-        {(!empresas || empresas.length === 0) ? (
-          <div className="p-8 text-center text-[var(--muted)]">
-            <p>No hay empresas registradas actualmente.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--surface)] text-[var(--subtle)]">
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold">Código ISO</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold">Identidad</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold">Dirección Web & Cont.</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold text-center">Comisión Base</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold text-right">Ajustes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {empresas.map((empresa) => (
-                  <tr key={empresa.id} className="border-b border-[var(--surface2)] hover:bg-[var(--surface3)] transition-colors group">
-                    <td className="py-4 px-6 font-mono text-sm">
-                      <span className="bg-white border border-[var(--border)] px-2 py-1 rounded text-[#191C1D] shadow-sm font-bold">
+      {(!empresas || empresas.length === 0) ? (
+        <div className="card text-center p-12 bg-white/50 border border-dashed border-[var(--border)]">
+          <p className="text-xl font-bold text-[var(--muted)] mb-2" style={{ fontFamily: "var(--font-display)" }}>Sin Empresas</p>
+          <p className="text-[var(--subtle)] text-sm font-mono">No hay organizaciones registradas actualmente.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {empresas.map((empresa) => (
+              <Link href={`/admin/empresas/${empresa.id}`} key={empresa.id}>
+                <div className="card bg-white border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden hover:border-[var(--green)] hover:shadow-lg transition-all group cursor-pointer h-full flex flex-col">
+                  <PlaceholderCover title={empresa.nombre_empresa} subtitle={empresa.codigo_empresa} />
+                  <div className="p-5 flex flex-col flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-white border border-[var(--border)] px-2 py-0.5 rounded text-[10px] font-mono font-bold text-[#191C1D] shadow-sm">
                         {empresa.codigo_empresa}
                       </span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <p className="font-bold text-[var(--text)]">{empresa.nombre_empresa}</p>
-                      <p className="text-xs text-[var(--muted)] font-bold uppercase mt-1 px-2 py-0.5 bg-[var(--surface)] w-max rounded">
-                        {(empresa.rubros as any)?.nombre_rubro || "S/ Rubro"}
-                      </p>
-                    </td>
-                    <td className="py-4 px-6">
-                      <p className="text-sm font-medium">{empresa.correo}</p>
-                      <p className="text-xs text-[var(--muted)] uppercase mt-0.5">Contactar a: {empresa.nombre_contacto} ({empresa.telefono})</p>
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                       <span className="font-mono font-bold text-[var(--green2)] bg-[var(--green-bg)] px-2 py-1 rounded">
-                         {empresa.porcentaje_comision}%
-                       </span>
-                    </td>
-                    <td className="py-4 px-6 text-right flex justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                      <EmpresaForm empresa={empresa} rubrosDisponibles={rubrosDisponibles} />
-                      <DeleteEmpresaButton id={empresa.id} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <span className="font-mono text-[10px] font-bold text-[var(--green2)] bg-[var(--green-bg)] px-2 py-0.5 rounded">
+                        {empresa.porcentaje_comision}%
+                      </span>
+                    </div>
+                    <p className="font-bold text-lg text-[var(--text)] group-hover:text-[var(--green2)] transition-colors mt-1" style={{ fontFamily: "var(--font-display)" }}>
+                      {empresa.nombre_empresa}
+                    </p>
+                    <p className="text-xs text-[var(--muted)] font-bold uppercase mt-1">
+                      {(empresa.rubros as any)?.nombre_rubro || "S/ Rubro"}
+                    </p>
+                    <div className="mt-auto pt-4 flex justify-end">
+                      <span className="text-xs font-bold text-[var(--green)] border border-[var(--green)]/30 px-3 py-1.5 rounded-[var(--radius-sm)] group-hover:bg-[var(--green)] group-hover:text-white transition-all">
+                        Ver Detalles &rarr;
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        )}
-      </div>
+          <GlobalPagination totalCount={totalCount} perPage={PER_PAGE} />
+        </>
+      )}
     </div>
   );
 }

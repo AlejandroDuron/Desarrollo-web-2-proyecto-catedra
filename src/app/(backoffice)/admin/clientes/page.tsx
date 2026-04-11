@@ -1,27 +1,34 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ClientesFiltros from "./components/clientes-filtros";
 import ClienteHistorial from "./components/cliente-historial";
+import GlobalPagination from "../components/global-pagination";
+
+const PER_PAGE = 10;
 
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ query?: string }>;
+  searchParams: Promise<{ query?: string; page?: string }>;
 }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams?.query || "";
+  const currentPage = Number(resolvedParams?.page) || 1;
+  const from = (currentPage - 1) * PER_PAGE;
+  const to = from + PER_PAGE - 1;
 
   const supabase = await createSupabaseServerClient();
-  
+
   let dbQuery = supabase
     .from("clientes")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
 
   if (query) {
     dbQuery = dbQuery.or(`nombres.ilike.%${query}%,apellidos.ilike.%${query}%,dui.ilike.%${query}%`);
   }
 
-  const { data: clientes, error } = await dbQuery;
+  dbQuery = dbQuery.range(from, to);
+  const { data: clientes, error, count: totalCount } = await dbQuery;
 
   if (error) {
     return (
@@ -87,6 +94,8 @@ export default async function ClientesPage({
           </div>
         )}
       </div>
+
+      <GlobalPagination totalCount={totalCount || 0} perPage={PER_PAGE} />
     </div>
   );
 }

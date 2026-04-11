@@ -1,10 +1,27 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import RubroForm from "./components/rubro-form";
-import DeleteRubroButton from "./components/delete-button";
+import PlaceholderCover from "../components/placeholder-cover";
+import GlobalPagination from "../components/global-pagination";
 
-export default async function RubrosPage() {
+const PER_PAGE = 10;
+
+export default async function RubrosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const currentPage = Number(resolvedParams?.page) || 1;
+  const from = (currentPage - 1) * PER_PAGE;
+  const to = from + PER_PAGE - 1;
+
   const supabase = await createSupabaseServerClient();
-  const { data: rubros, error } = await supabase.from("rubros").select("*").order("id", { ascending: true });
+  const { data: rubros, error, count } = await supabase
+    .from("rubros")
+    .select("*", { count: "exact" })
+    .order("id", { ascending: true })
+    .range(from, to);
 
   if (error) {
     return (
@@ -17,7 +34,7 @@ export default async function RubrosPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto flex flex-col gap-6">
+    <div className="p-8 max-w-7xl mx-auto flex flex-col gap-6">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
@@ -28,37 +45,36 @@ export default async function RubrosPage() {
         <RubroForm />
       </div>
 
-      <div className="card bg-[var(--bg)] p-1">
-        {(!rubros || rubros.length === 0) ? (
-          <div className="p-8 text-center text-[var(--muted)]">
-            <p>No hay rubros registrados actualmente.</p>
+      {(!rubros || rubros.length === 0) ? (
+        <div className="card text-center p-12 bg-white/50 border border-dashed border-[var(--border)]">
+          <p className="text-xl font-bold text-[var(--muted)] mb-2" style={{ fontFamily: "var(--font-display)" }}>Sin Rubros</p>
+          <p className="text-[var(--subtle)] text-sm font-mono">No hay categorías registradas actualmente.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {rubros.map((rubro) => (
+              <Link href={`/admin/rubros/${rubro.id}`} key={rubro.id}>
+                <div className="card bg-white border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden hover:border-[var(--green)] hover:shadow-lg transition-all group cursor-pointer">
+                  <PlaceholderCover title={rubro.nombre_rubro} subtitle={`ID #${rubro.id}`} />
+                  <div className="p-5">
+                    <p className="font-bold text-lg text-[var(--text)] group-hover:text-[var(--green2)] transition-colors" style={{ fontFamily: "var(--font-display)" }}>
+                      {rubro.nombre_rubro}
+                    </p>
+                    <p className="text-xs text-[var(--muted)] font-mono mt-1">Categoría #{rubro.id}</p>
+                    <div className="mt-4 flex justify-end">
+                      <span className="text-xs font-bold text-[var(--green)] border border-[var(--green)]/30 px-3 py-1.5 rounded-[var(--radius-sm)] group-hover:bg-[var(--green)] group-hover:text-white transition-all">
+                        Ver Detalles &rarr;
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--surface)] text-[var(--subtle)]">
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold">ID</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold">Nombre del Rubro</th>
-                  <th className="py-4 px-6 text-xs uppercase tracking-wider font-bold text-right">Opciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rubros.map((rubro) => (
-                  <tr key={rubro.id} className="border-b border-[var(--surface2)] hover:bg-[var(--surface3)] transition-colors group">
-                    <td className="py-4 px-6 font-mono text-sm text-[var(--muted)]">#{rubro.id}</td>
-                    <td className="py-4 px-6 font-medium text-[var(--text)] text-lg">{rubro.nombre_rubro}</td>
-                    <td className="py-4 px-6 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <RubroForm rubro={rubro} />
-                      <DeleteRubroButton id={rubro.id} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+          <GlobalPagination totalCount={count || 0} perPage={PER_PAGE} />
+        </>
+      )}
     </div>
   );
 }
