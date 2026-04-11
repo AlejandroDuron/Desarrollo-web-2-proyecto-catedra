@@ -18,6 +18,7 @@ import {
 } from "./queries";
 
 export type { EstadoOferta, CategoriaOferta, OfertaConMetricas } from "./schema";
+import { updateOfertaRechazada } from "./queries";
 
 // ─── Obtener ofertas con métricas ─────────────────────────────────────────────
 
@@ -99,6 +100,39 @@ export async function descartarOferta(ofertaId: string) {
     return { error: (e as Error).message };
   }
 
+  revalidatePath("/empresa/ofertas");
+  return { success: true };
+}
+
+export async function editarOfertaRechazada(ofertaId: string, formData: FormData) {
+  const raw    = Object.fromEntries(formData.entries());
+  const parsed = ofertaSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  const { empleado } = await requireRole("admin_empresa");
+
+  try {
+    await updateOfertaRechazada(ofertaId, empleado.id_empresa!, {
+      titulo:           parsed.data.titulo,
+      descripcion:      parsed.data.descripcion,
+      otros_detalles:   parsed.data.otros_detalles || null,
+      precio_regular:   parsed.data.precio_regular,
+      precio_oferta:    parsed.data.precio_oferta,
+      stock:            parsed.data.total_cupones,
+      fecha_inicio:     parsed.data.fecha_inicio,
+      fecha_fin:        parsed.data.fecha_fin,
+      fecha_limite_uso: parsed.data.fecha_limite_uso,
+      image_url:        parsed.data.imagen_url || null,
+      cantidad_limite:  parsed.data.cantidad_limite ?? null,
+    });
+  } catch (e) {
+    return { error: { server: [(e as Error).message] } };
+  }
+
+  revalidatePath(`/empresa/ofertas/${ofertaId}`);
   revalidatePath("/empresa/ofertas");
   return { success: true };
 }

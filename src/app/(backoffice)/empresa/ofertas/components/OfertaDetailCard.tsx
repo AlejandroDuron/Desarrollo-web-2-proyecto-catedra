@@ -1,152 +1,133 @@
-import { type OfertaConMetricas } from "../schema";
+"use client";
+
+import { type OfertaConMetricas } from "../actions";
 import OfertaRechazadaActions from "./OfertaRechazadaActions";
 
 const fmtMoney = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString("es-SV", { day: "2-digit", month: "long", year: "numeric" });
 
 export default function OfertaDetailCard({ oferta }: { oferta: OfertaConMetricas }) {
   const descuento = oferta.precio_regular > 0
     ? Math.round((1 - oferta.precio_oferta / oferta.precio_regular) * 100)
     : null;
 
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-[#EDEEEF]">
+  const isRechazada      = oferta.categoria === "rechazadas";
+  const isDescartada     = oferta.categoria === "descartadas";
+  const showJustificacion = (isRechazada || isDescartada) && oferta.justificacion_rechazo;
 
-      {/* ── Imagen hero ── */}
-      <div className={`relative aspect-[21/8] w-full overflow-hidden bg-[#F3F4F5] ${oferta.categoria === "rechazadas" ? "grayscale-[0.5]" : ""}`}>
+  return (
+    <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-[#EDEEEF]">
+
+      {/* Imagen */}
+      <div className={`relative aspect-[16/6] w-full overflow-hidden bg-[#f3f4f5] ${isRechazada || isDescartada ? "grayscale-[0.4]" : ""}`}>
         {oferta.image_url ? (
           <>
             <img
               src={oferta.image_url}
               alt={oferta.titulo}
-              className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-700"
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#E1E3E4] text-6xl">
+          <div className="w-full h-full flex items-center justify-center text-[#e1e3e4] text-5xl">
             🏷️
           </div>
         )}
-        {oferta.categoria === "rechazadas" && (
-          <div className="absolute top-6 right-6">
-            <div className="flex items-center gap-2 bg-[#ba1a1a] text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-xl">
-              ✕ RECHAZADA
+
+        {(isRechazada || isDescartada) && (
+          <div className="absolute top-3 right-3">
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs shadow-md text-white
+              ${isRechazada ? "bg-[#ba1a1a]" : "bg-[#454935]"}`}>
+              ✕ {isRechazada ? "RECHAZADA" : "DESCARTADA"}
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Contenido ── */}
-      <div className="p-8 md:p-12 space-y-10">
+      {/* Contenido */}
+      <div className="p-4 md:p-6 space-y-6">
 
-        {/* Título y precios */}
-        <div className="flex flex-col xl:flex-row justify-between items-start gap-8">
-          <div className="space-y-3 max-w-3xl">
-            <h2 className="text-3xl md:text-4xl font-black tracking-tighter leading-tight text-[#191C1D]">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+
+          {/* Texto */}
+          <div className="space-y-1.5 max-w-xl">
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#191c1d]">
               {oferta.titulo}
             </h2>
             {oferta.descripcion && (
-              <p className="text-lg text-[#454935] leading-relaxed">{oferta.descripcion}</p>
+              <p className="text-sm text-[#454935] leading-relaxed">
+                {oferta.descripcion}
+              </p>
             )}
           </div>
 
-          <div className="shrink-0 xl:text-right space-y-1">
+          {/* Precio */}
+          <div className="shrink-0 md:text-right">
             {oferta.precio_regular > 0 && (
-              <p className="text-xl font-bold line-through text-[#9EA3A6]">
+              <p className="text-sm line-through text-[#9ea3a6]">
                 {fmtMoney(oferta.precio_regular)}
               </p>
             )}
-            <p className="text-4xl md:text-5xl font-black tracking-tighter text-[#526600]">
+
+            <p className="text-2xl md:text-3xl font-bold text-[#526600]">
               {fmtMoney(oferta.precio_oferta)}
             </p>
+
             {descuento && (
-              <span className="inline-block px-3 py-1 bg-[#526600] text-white text-sm font-bold tracking-widest uppercase rounded-lg">
+              <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#526600] text-white text-[10px] font-bold tracking-wide rounded-md">
                 {descuento}% OFF
               </span>
             )}
           </div>
         </div>
 
-        {/* Datos clave */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-[#EDEEEF]">
+        {/* Detalles */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-[#EDEEEF]">
 
-          <InfoSection title="Vigencia">
-            <InfoRow label="Fecha de inicio"    value={fmtDate(oferta.fecha_inicio)} />
-            <InfoRow label="Fecha de fin"        value={fmtDate(oferta.fecha_fin)} />
-            <InfoRow label="Límite de uso"       value={fmtDate(oferta.fecha_limite_uso)} />
-          </InfoSection>
-
-          <InfoSection title="Cupones">
-            <InfoRow label="Stock total"         value={oferta.stock.toLocaleString("en-US")} />
-            {oferta.cantidad_limite && (
-              <InfoRow label="Límite por cliente" value={String(oferta.cantidad_limite)} />
+          {/* Izquierda */}
+          <div className="space-y-4">
+            {oferta.otros_detalles && (
+              <div>
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#6b7280] mb-1">
+                  Términos y condiciones
+                </h3>
+                <p className="text-sm text-[#454935] leading-relaxed whitespace-pre-line">
+                  {oferta.otros_detalles}
+                </p>
+              </div>
             )}
-            <InfoRow label="Vendidos"            value={oferta.cupones_vendidos.toLocaleString("en-US")} />
-            <InfoRow label="Disponibles"         value={oferta.cupones_disponibles.toLocaleString("en-US")} />
-          </InfoSection>
+          </div>
 
+          {/* Derecha */}
+          {showJustificacion && (
+            <div className="p-4 rounded-xl bg-[#ffdad6]/40 border border-[#ba1a1a]/20">
+              <h3 className="font-semibold text-sm text-[#ba1a1a] mb-2 flex items-center gap-2">
+                ⚠️ Justificación
+              </h3>
+
+              <p className="text-sm text-[#454935] italic leading-relaxed">
+                "{oferta.justificacion_rechazo}"
+              </p>
+
+              <div className="mt-3 pt-3 border-t border-[#ba1a1a]/10 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center text-xs">
+                  🔒
+                </div>
+                <span className="text-[11px] font-medium text-[#191c1d]">
+                  Admin
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Otros detalles */}
-        {oferta.otros_detalles && (
-          <div className="pt-6 border-t border-[#EDEEEF]">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#454935] mb-3">
-              Términos y Condiciones
-            </h3>
-            <p className="text-sm text-[#454935] leading-relaxed whitespace-pre-line">
-              {oferta.otros_detalles}
-            </p>
-          </div>
+        {/* Acciones */}
+        {isRechazada && (
+          <OfertaRechazadaActions oferta={oferta} />
         )}
-
-        {/* Justificación de rechazo */}
-        {oferta.categoria === "rechazadas" && oferta.justificacion_rechazo && (
-          <div className="p-8 rounded-2xl bg-[#FFDAD6]/30 border border-[#ba1a1a]/20">
-            <h3 className="text-lg font-black uppercase tracking-tight text-[#ba1a1a] mb-4 flex items-center gap-2">
-              ⚠️ Justificación del Rechazo
-            </h3>
-            <p className="text-[#454935] text-base leading-relaxed italic">
-              "{oferta.justificacion_rechazo}"
-            </p>
-            <div className="mt-6 pt-6 border-t border-[#ba1a1a]/10 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center text-sm">
-                🔒
-              </div>
-              <p className="text-xs font-bold uppercase tracking-widest text-[#191C1D]">
-                Admin de Plataforma
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Acciones para oferta rechazada */}
-        {oferta.categoria === "rechazadas" && (
-          <OfertaRechazadaActions ofertaId={oferta.id} />
-        )}
-
       </div>
-    </div>
-  );
-}
-
-function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-[#454935]">{title}</h3>
-      <div className="flex flex-col">{children}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center py-2.5 border-b border-[#F3F4F5]">
-      <span className="text-sm text-[#454935]">{label}</span>
-      <span className="text-sm font-bold text-[#191C1D]">{value}</span>
     </div>
   );
 }

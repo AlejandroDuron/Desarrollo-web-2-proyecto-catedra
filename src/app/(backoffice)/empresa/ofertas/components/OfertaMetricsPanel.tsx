@@ -1,3 +1,5 @@
+"use client";
+
 const fmt      = (n: number) => n.toLocaleString("en-US");
 const fmtMoney = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

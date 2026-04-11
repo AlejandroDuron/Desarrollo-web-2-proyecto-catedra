@@ -21,12 +21,13 @@ export default async function OfertaDetailPage({ params }: Props) {
   }
 
   const showMetrics =
-    oferta.categoria !== "en_espera" && oferta.categoria !== "descartadas";
+    oferta.categoria !== "en_espera"  &&
+    oferta.categoria !== "descartadas" &&
+    oferta.categoria !== "rechazadas";  
 
   return (
-    <div className="px-4 md:px-8 py-10 max-w-7xl mx-auto">
+    <div className="px-4 md:px-8 py-10 max-w-5xl mx-auto">  {/* max-w-5xl en vez de 7xl */}
       <OfertaDetailHeader categoria={oferta.categoria} />
-
       {showMetrics && (
         <OfertaMetricsPanel
           cupones_vendidos={oferta.cupones_vendidos}
@@ -37,7 +38,6 @@ export default async function OfertaDetailPage({ params }: Props) {
           stock={oferta.stock}
         />
       )}
-
       <OfertaDetailCard oferta={oferta} />
     </div>
   );

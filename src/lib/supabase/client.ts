@@ -8,7 +8,6 @@ export interface SupabaseClientConfig {
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-<<<<<<< HEAD
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       auth: {
@@ -17,8 +16,3 @@ export function createClient() {
     },
   );
 }
-=======
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  )
-}
->>>>>>> 3cb3134 (modulo empleado)

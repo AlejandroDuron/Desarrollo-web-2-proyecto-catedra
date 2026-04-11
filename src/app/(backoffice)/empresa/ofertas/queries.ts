@@ -270,3 +270,36 @@ export async function updateOfertaDescartada(
 
   if (error) throw new Error(error.message);
 }
+
+export async function updateOfertaRechazada(
+    ofertaId:   string,
+    id_empresa: string,
+    payload: {
+      titulo:           string;
+      descripcion:      string;
+      otros_detalles:   string | null;
+      precio_regular:   number;
+      precio_oferta:    number;
+      stock:            number;
+      fecha_inicio:     string;
+      fecha_fin:        string;
+      fecha_limite_uso: string;
+      image_url:        string | null;
+      cantidad_limite:  number | null;
+    }
+  ) {
+    const supabase = await createSupabaseServerClient();
+  
+    const { error } = await supabase
+      .from("ofertas")
+      .update({
+        ...payload,
+        estado: "En espera de aprobación" as const,
+        justificacion_rechazo: null,
+      })
+      .eq("id", ofertaId)
+      .eq("id_empresa", id_empresa)
+      .eq("estado", "Oferta rechazada");
+  
+    if (error) throw new Error(error.message);
+  }
