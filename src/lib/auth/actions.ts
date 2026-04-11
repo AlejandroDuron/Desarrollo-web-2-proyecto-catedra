@@ -87,7 +87,15 @@ export async function recoveryAction(
   });
 
   if (error) {
-    return { error: "No se pudo procesar la recuperacion en este momento." };
+    console.error("resetPasswordForEmail error:", {
+      message: error.message,
+      code: error.code,
+      status: error.status,
+      redirectTo: `${appUrl}/recovery`,
+    });
+    return {
+      error: `No se pudo procesar la recuperacion: ${error.message}`,
+    };
   }
 
   return {

@@ -1,80 +1,76 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { Zap} from 'lucide-react'
 
-const ROL_ACTIVO = "admin_empresa";
+import { logoutAction } from "@/lib/auth/actions";
+import { requireAuthenticatedEmployee } from "@/lib/supabase/server";
 
 const navLinks: Record<string, { label: string; href: string }[]> = {
   admin_general: [
-    { label: "Empresas",  href: "/admin/empresas" },
-    { label: "Rubros",    href: "/admin/rubros" },
-    { label: "Ofertas",   href: "/admin/ofertas" },
-    { label: "Clientes",  href: "/admin/clientes" },
+    { label: "Empresas", href: "/admin/empresas" },
+    { label: "Rubros", href: "/admin/rubros" },
+    { label: "Ofertas", href: "/admin/ofertas" },
+    { label: "Clientes", href: "/admin/clientes" },
   ],
   admin_empresa: [
-    { label: "Ofertas",   href: "/empresa/ofertas" },
+    { label: "Ofertas", href: "/empresa/ofertas" },
     { label: "Empleados", href: "/empresa/empleados" },
   ],
-  empleado: [
-    { label: "Canjes", href: "/empleado/canjes" },
-  ],
+  empleado: [{ label: "Canjes", href: "/empleado/canjes" }],
 };
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const links = navLinks[ROL_ACTIVO] ?? [];
+const securityPaths = {
+  admin_general: "/admin/seguridad",
+  admin_empresa: "/empresa/seguridad",
+  empleado: "/empleado/seguridad",
+} as const;
+
+function BrandIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-[18px] w-[18px]"
+      fill="none"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M13 2L4 14H11L10 22L20 9H13L13 2Z"
+        stroke="var(--green)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.5"
+      />
+    </svg>
+  );
+}
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, empleado } = await requireAuthenticatedEmployee();
+  const links = navLinks[empleado.rol] ?? [];
+  const securityPath = securityPaths[empleado.rol];
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 h-16 flex items-center justify-between px-8 bg-[#F8F9FA]/90 backdrop-blur-xl border-b border-[#191C1D]/10">
-        <Link href="/" className="logo">
-          <Zap size={18} color="var(--green)" strokeWidth={2.5} />
+      <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#191C1D]/10 bg-[#F8F9FA]/90 px-8 backdrop-blur-xl">
+        <Link className="logo" href="/">
+          <BrandIcon />
           <span>La Cuponera</span>
         </Link>
 
         <div className="flex items-center gap-6">
-          <div className="hidden md:flex gap-1">
+          <div className="hidden gap-1 md:flex">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 rounded-lg text-sm font-bold text-[#191C1D] hover:bg-[#EDEEEF] transition-colors"
+                className="rounded-lg px-4 py-2 text-sm font-bold text-[#191C1D] transition-colors hover:bg-[#EDEEEF]"
               >
                 {link.label}
               </Link>
             ))}
-          </div>
-
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              className="w-10 h-10 rounded-full font-bold text-sm bg-[#526600] text-[#D9FF50] hover:opacity-90 transition-opacity"
-            >
-              JS
-            </button>
-
-            {menuOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-[#191C1D]/10 overflow-hidden z-50">
-                <div className="py-2">
-                  <Link
-                    href="/empresa/seguridad"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#191C1D] hover:bg-[#D9FF50] hover:text-[#171E00] transition-colors"
-                  >
-                    Cambiar Contraseña
-                  </Link>
-                  <hr className="border-[#191C1D]/10 mx-4 my-1" />
-                  <button
-                    onClick={() => setMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#ba1a1a] hover:bg-[#FFDAD6] transition-colors"
-                  >
-                    Cerrar Sesión
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -85,8 +81,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </p>
             </div>
 
+            <Link
+              href={securityPath}
+              className="rounded-lg px-4 py-2 text-sm font-bold text-[#191C1D] transition-colors hover:bg-[#EDEEEF]"
+            >
+              Cambiar contrasena
+            </Link>
+
             <form action={logoutAction}>
-              <button className="btn btn-outline" type="submit">
+              <button
+                className="rounded-lg px-4 py-2 text-sm font-bold text-[#ba1a1a] transition-colors hover:bg-[#FFDAD6]"
+                type="submit"
+              >
                 Cerrar sesion
               </button>
             </form>
