@@ -88,7 +88,7 @@ function AprobarBoton({ id }: { id: string }) {
 }
 
 function getBadgeInfo(oferta: any) {
-  const currentDate = new Date("2026-04-11T00:00:00").getTime();
+  const currentDate = new Date(new Date().toISOString().split("T")[0] + "T00:00:00").getTime();
   const inicio = new Date(oferta.fecha_inicio).getTime();
   const fin = new Date(oferta.fecha_fin).getTime();
 

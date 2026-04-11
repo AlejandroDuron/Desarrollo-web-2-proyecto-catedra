@@ -6,7 +6,7 @@ import GlobalPagination from "../components/global-pagination";
 const PER_PAGE = 10;
 
 function getBadgeInfo(oferta: any) {
-  const currentDate = new Date("2026-04-11T00:00:00").getTime();
+  const currentDate = new Date(new Date().toISOString().split("T")[0] + "T00:00:00").getTime();
   const inicio = new Date(oferta.fecha_inicio).getTime();
   const fin = new Date(oferta.fecha_fin).getTime();
 
@@ -32,7 +32,7 @@ export default async function OfertasPage({
   const currentPage = Number(resolvedParams?.page) || 1;
   const from = (currentPage - 1) * PER_PAGE;
   const to = from + PER_PAGE - 1;
-  const todayStr = "2026-04-11";
+  const todayStr = new Date().toISOString().split("T")[0];
 
   const supabase = await createSupabaseServerClient();
 

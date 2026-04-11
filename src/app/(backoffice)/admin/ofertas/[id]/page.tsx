@@ -23,7 +23,7 @@ export default async function OfertaDetallePage({
   const porcentaje = Math.round((1 - oferta.precio_oferta / oferta.precio_regular) * 100);
   const isEnEspera = oferta.estado === "En espera de aprobación";
 
-  const currentDate = new Date("2026-04-11T00:00:00").getTime();
+  const currentDate = new Date(new Date().toISOString().split("T")[0] + "T00:00:00").getTime();
   const inicio = new Date(oferta.fecha_inicio).getTime();
   const fin = new Date(oferta.fecha_fin).getTime();
 
