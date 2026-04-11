@@ -1,23 +1,25 @@
+import { type OfertaConMetricas, type CategoriaOferta } from "../actions";
 import OfferCard from "./OfferCard";
 
-interface Oferta {
-  id:             string;
-  titulo:         string;
-  dias_restantes: number;
-  ventas:         number;
-  disponibles:    number;
-  ingresos:       number;
-  comision:       number;
-  comision_pct:   number;
-  imagen_url:     string;
-  estado:         "activa" | "agotandose" | "en_espera" | "rechazada" | "pasada";
+interface OffersGridProps {
+  ofertas:   OfertaConMetricas[];
+  categoria: CategoriaOferta;
 }
 
-export default function OffersGrid({ ofertas }: { ofertas: Oferta[] }) {
+const EMPTY_MESSAGES: Record<CategoriaOferta, string> = {
+  activas:            "No hay ofertas activas en este momento.",
+  en_espera:          "No hay ofertas pendientes de aprobación.",
+  aprobadas_futuras:  "No hay ofertas aprobadas programadas.",
+  pasadas:            "No hay ofertas pasadas.",
+  rechazadas:         "No hay ofertas rechazadas.",
+  descartadas:        "No hay ofertas descartadas.",
+};
+
+export default function OffersGrid({ ofertas, categoria }: OffersGridProps) {
   if (ofertas.length === 0) {
     return (
-      <div className="text-center py-20 text-[#454935]">
-        No hay ofertas en esta categoría.
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <p className="text-[#454935] text-sm">{EMPTY_MESSAGES[categoria]}</p>
       </div>
     );
   }
@@ -25,21 +27,8 @@ export default function OffersGrid({ ofertas }: { ofertas: Oferta[] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {ofertas.map((oferta) => (
-        <OfferCard
-          key={oferta.id}
-          titulo={oferta.titulo}
-          diasRestantes={oferta.dias_restantes}
-          ventas={oferta.ventas}
-          disponibles={oferta.disponibles}
-          ingresos={oferta.ingresos}
-          comision={oferta.comision}
-          comisionPct={oferta.comision_pct}
-          imagenUrl={oferta.imagen_url}
-          estado={oferta.estado}
-        />
+        <OfferCard key={oferta.id} oferta={oferta} />
       ))}
     </div>
-
-    
   );
 }

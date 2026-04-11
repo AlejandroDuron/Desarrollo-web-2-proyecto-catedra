@@ -1,70 +1,41 @@
 // Server Component — los datos vendrían de Supabase en producción
+import { getOfertasConMetricas, type CategoriaOferta, type OfertaConMetricas } from "./actions";
 import OffersHeader from "./components/OffersHeader";
 import MetricsPanel from "./components/MetricsPanel";
 import OffersTabs from "./components/OffersTabs";
 import OffersGrid from "./components/OffersGrid";
-import Button from "./components/AddButton";
 
-// ── Datos de ejemplo (reemplazar por fetch a Supabase) ──────────────
-const EMPRESA_NOMBRE = "Technova Solutions";
+export default async function EmpresaOfertasPage() {
+  const { ofertas, nombre_empresa, conteos } = await getOfertasConMetricas();
 
-const METRICS = {
-  cuponesVendidos:    1248,
-  cuponesDisponibles: 352,
-  ingresosTotales:    18720,
-  cargoServicio:      1872,
-  comisionPct:        10,
-};
+  // Métricas globales: solo sobre ofertas activas
+  const activas = ofertas.filter((o) => o.categoria === "activas");
+  const metrics = {
+    cuponesVendidos:    activas.reduce((s, o) => s + o.cupones_vendidos,    0),
+    cuponesDisponibles: activas.reduce((s, o) => s + o.cupones_disponibles, 0),
+    ingresosTotales:    activas.reduce((s, o) => s + o.ingresos_totales,    0),
+    cargoServicio:      activas.reduce((s, o) => s + o.cargo_servicio,      0),
+    comisionPct:        ofertas[0]?.porcentaje_comision ?? 0,
+  };
 
-const OFERTAS = [
-  {
-    id:             "1",
-    titulo:         "Pack de Smart Home: Control Total",
-    dias_restantes: 12,
-    ventas:         842,
-    disponibles:    158,
-    ingresos:       12630,
-    comision:       1263,
-    comision_pct:   10,
-    imagen_url:     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800",
-    estado:         "activa" as const,
-  },
-  {
-    id:             "2",
-    titulo:         "Reloj Inteligente V2 Titanium",
-    dias_restantes: 5,
-    ventas:         406,
-    disponibles:    94,
-    ingresos:       6090,
-    comision:       609,
-    comision_pct:   10,
-    imagen_url:     "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
-    estado:         "activa" as const,
-  },
-  {
-    id:             "3",
-    titulo:         "Audífonos Studio Wireless Gen 4",
-    dias_restantes: 2,
-    ventas:         1120,
-    disponibles:    5,
-    ingresos:       33600,
-    comision:       3360,
-    comision_pct:   10,
-    imagen_url:     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
-    estado:         "agotandose" as const,
-  },
-];
-// ────────────────────────────────────────────────────────────────────
+  // Serializar para pasar a Client Components
+  const ofertasPorCategoria: Record<CategoriaOferta, OfertaConMetricas[]> = {
+    en_espera:        ofertas.filter((o) => o.categoria === "en_espera"),
+    aprobadas_futuras: ofertas.filter((o) => o.categoria === "aprobadas_futuras"),
+    activas:          activas,
+    pasadas:          ofertas.filter((o) => o.categoria === "pasadas"),
+    rechazadas:       ofertas.filter((o) => o.categoria === "rechazadas"),
+    descartadas:      ofertas.filter((o) => o.categoria === "descartadas"),
+  };
 
-export default function EmpresaOfertasPage() {
   return (
     <div className="px-8 py-10 max-w-7xl mx-auto">
-      <OffersHeader empresaNombre={EMPRESA_NOMBRE}/>
-      <MetricsPanel metrics={METRICS} />
-
-      {/* Tabs y Grid son Client Components por interactividad */}
-      <OffersTabs />
-      <OffersGrid ofertas={OFERTAS} />
+      <OffersHeader empresaNombre={nombre_empresa} />
+      <MetricsPanel metrics={metrics} />
+      <OffersTabs
+        conteos={conteos}
+        ofertasPorCategoria={ofertasPorCategoria}
+      />
     </div>
   );
 }
