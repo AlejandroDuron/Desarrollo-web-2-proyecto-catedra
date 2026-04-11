@@ -1,11 +1,29 @@
 "use server";
 
-import type { EmpresaOfertaValues } from "./schema";
+import { revalidatePath } from "next/cache";
+import { ofertaSchema } from "./schema";
 
-export async function saveOferta(values: EmpresaOfertaValues) {
-  return {
-    success: true,
-    message: "Oferta pendiente de implementacion.",
-    data: values,
-  };
+export async function crearOferta(formData: FormData) {
+  const raw    = Object.fromEntries(formData.entries());
+  const parsed = ofertaSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  // TODO: insertar en Supabase con estado 'en_espera'
+  // const supabase = await createServerClient();
+  // await supabase.from("ofertas").insert({ ...parsed.data, estado: "en_espera", empresa_id: ... });
+
+  revalidatePath("/empresa/ofertas");
+  return { success: true };
+}
+
+export async function descartarOferta(ofertaId: string) {
+  // TODO: actualizar estado a 'descartada' en Supabase
+  // const supabase = await createServerClient();
+  // await supabase.from("ofertas").update({ estado: "descartada" }).eq("id", ofertaId);
+
+  revalidatePath("/empresa/ofertas");
+  return { success: true };
 }
