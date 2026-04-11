@@ -1,71 +1,75 @@
-import { requireRole } from "@/lib/supabase/server";
+import { createSupabaseServerClient, requireRole } from "@/lib/supabase/server";
+import StatsGrid from "./components/stats-grid";
+import CuponesChart from "./components/cupones-chart";
+import QuickActions from "./components/quick-actions";
 
-const supervisionItems = [
-  {
-    empresa: "Cafe Aurora",
-    actividad: "Canjes fuera de horario",
-    nivel: "Media",
-  },
-  {
-    empresa: "Libreria Central",
-    actividad: "Pico de aprobaciones",
-    nivel: "Baja",
-  },
-];
-
-export default async function AdminPage() {
+export default async function AdminDashboardPage() {
   await requireRole("admin_general");
+  const supabase = await createSupabaseServerClient();
+
+  // Data Fetching Asíncrono Paralelizado
+  const [
+    { count: countEmpresas },
+    { count: countEspera, data: ofertasEspera },
+    { data: metricasFinancieras },
+    { data: cuponesEstados }
+  ] = await Promise.all([
+    supabase.from("empresas").select("*", { count: "exact", head: true }),
+    supabase.from("ofertas").select("id, titulo, created_at, empresas(nombre_empresa)", { count: "exact" }).eq("estado", "En espera de aprobación").order("created_at", { ascending: false }).limit(3),
+    supabase.from("empresas").select("porcentaje_comision, ofertas(precio_oferta, cupones(*))"),
+    supabase.from("cupones").select("estado_cupon, ofertas(fecha_limite_uso)")
+  ]);
+
+  // Transformación Financiera Centralizada
+  let ingresosComisiones = 0;
+  let cuponesTotales = 0;
+
+  if (metricasFinancieras) {
+    metricasFinancieras.forEach((emp: any) => {
+      let ingresosEmpresa = 0;
+      if (emp.ofertas) {
+        emp.ofertas.forEach((oferta: any) => {
+          const countVendidos = oferta.cupones ? oferta.cupones.length : 0;
+          cuponesTotales += countVendidos;
+          ingresosEmpresa += countVendidos * (Number(oferta.precio_oferta) || 0);
+        });
+      }
+      const feeCalculado = ingresosEmpresa * (Number(emp.porcentaje_comision || 0) / 100);
+      ingresosComisiones += feeCalculado;
+    });
+  }
+
+  // Empaquetado final de métricas
+  const dashboardMetrics = {
+    empresas: countEmpresas || 0,
+    espera: countEspera || 0,
+    cupones: cuponesTotales,
+    comisiones: ingresosComisiones
+  };
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Resumen general</h2>
-        <p className="text-sm text-slate-600">
-          Esta vista reemplaza la antigua pantalla de supervision.
+    <div className="p-8 max-w-7xl mx-auto flex flex-col gap-6 w-full animate-in fade-in duration-500">
+
+      <div className="flex flex-col gap-1 mb-2">
+        <h1 className="text-4xl font-black text-[var(--text)]" style={{ fontFamily: "var(--font-display)" }}>
+          Bienvenido, Administrador General
+        </h1>
+        <p className="text-[var(--subtle)] text-sm font-mono bg-yellow-100/50 w-max px-3 py-1 rounded inline-block mt-1 border border-yellow-200 text-yellow-900 shadow-sm">
+          Tienes <b className="font-bold">{dashboardMetrics.espera}</b> ofertas por revisar hoy.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <p className="text-sm text-slate-500">Empresas activas</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">24</p>
-        </article>
-        <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <p className="text-sm text-slate-500">Ofertas pendientes</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">7</p>
-        </article>
-        <article className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <p className="text-sm text-slate-500">Alertas abiertas</p>
-          <p className="mt-3 text-3xl font-semibold text-slate-900">3</p>
-        </article>
+      <StatsGrid metrics={dashboardMetrics} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
+        <div className="lg:col-span-2">
+          <CuponesChart datos={cuponesEstados || []} />
+        </div>
+        <div className="">
+          <QuickActions ofertas={ofertasEspera || []} />
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-        <div className="border-b border-slate-200 px-4 py-4">
-          <h3 className="text-lg font-semibold text-slate-900">Actividad a supervisar</h3>
-          <p className="text-sm text-slate-600">
-            Consolidado de eventos relevantes para revision administrativa.
-          </p>
-        </div>
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-slate-600">
-            <tr>
-              <th className="px-4 py-3 font-medium">Empresa</th>
-              <th className="px-4 py-3 font-medium">Actividad</th>
-              <th className="px-4 py-3 font-medium">Riesgo</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {supervisionItems.map((item) => (
-              <tr key={`${item.empresa}-${item.actividad}`}>
-                <td className="px-4 py-3 text-slate-900">{item.empresa}</td>
-                <td className="px-4 py-3 text-slate-600">{item.actividad}</td>
-                <td className="px-4 py-3 text-slate-600">{item.nivel}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+    </div>
   );
 }

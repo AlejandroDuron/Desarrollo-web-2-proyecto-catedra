@@ -10,16 +10,39 @@ export default async function OfertasPage({
 }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams?.query || "";
-  const status = (resolvedParams?.status || "En espera de aprobación") as NonNullable<Database["public"]["Enums"]["estado_oferta"]>;
-  const isReadOnly = status !== "En espera de aprobación";
+  const filter = resolvedParams?.status || "espera";
+  const isReadOnly = filter !== "espera";
+  const todayStr = "2026-04-11";
 
   const supabase = await createSupabaseServerClient();
   
-  const { data: ofertas, error } = await supabase
+  let dbQuery = supabase
     .from("ofertas")
     .select("*, empresas(nombre_empresa)")
-    .eq("estado", status)
     .order("created_at", { ascending: false });
+
+  switch (filter) {
+    case "espera":
+      dbQuery = dbQuery.eq("estado", "En espera de aprobación").gte("fecha_fin", todayStr);
+      break;
+    case "futuras":
+      dbQuery = dbQuery.eq("estado", "Oferta aprobada").gt("fecha_inicio", todayStr);
+      break;
+    case "activas":
+      dbQuery = dbQuery.eq("estado", "Oferta aprobada").lte("fecha_inicio", todayStr).gte("fecha_fin", todayStr);
+      break;
+    case "pasadas":
+      dbQuery = dbQuery.lt("fecha_fin", todayStr);
+      break;
+    case "rechazadas":
+      dbQuery = dbQuery.eq("estado", "Oferta rechazada").gte("fecha_fin", todayStr);
+      break;
+    case "descartadas":
+      dbQuery = dbQuery.eq("estado", "Oferta descartada").gte("fecha_fin", todayStr);
+      break;
+  }
+
+  const { data: ofertas, error } = await dbQuery;
 
   if (error) {
     return (
@@ -61,8 +84,13 @@ export default async function OfertasPage({
           </p>
           <p className="text-[var(--subtle)] text-sm font-mono">
             {query 
-              ? `No se encontraron ofertas coincidiendo con "${query}" en la pestaña de ${status}.` 
-              : `No hay ofertas con el estado de ${status} actualmente.`}
+              ? `No se encontraron ofertas coincidiendo con "${query}".` 
+              : filter === "futuras" ? "No hay ofertas programadas para el futuro."
+              : filter === "activas" ? "No hay promociones en circulación actualmente."
+              : filter === "pasadas" ? "No hay ofertas caducadas en el archivo."
+              : filter === "rechazadas" ? "No hay historial de rechazos."
+              : filter === "descartadas" ? "No hay ofertas descartadas."
+              : `No hay ofertas pendientes de valoración.`}
           </p>
         </div>
       ) : (

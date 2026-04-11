@@ -19,6 +19,7 @@ export default function OfertaTable({ ofertas, isReadOnly }: { ofertas: any[], i
         <tbody>
           {ofertas.map((oferta) => {
             const porcentaje = Math.round((1 - (oferta.precio_oferta / oferta.precio_regular)) * 100);
+            const badge = getBadgeInfo(oferta);
             
             return (
               <tr key={oferta.id} className="border-b border-[var(--surface2)] hover:bg-[var(--surface3)] transition-colors group">
@@ -26,8 +27,18 @@ export default function OfertaTable({ ofertas, isReadOnly }: { ofertas: any[], i
                   <p className="font-bold text-[var(--text)]">{oferta.empresas?.nombre_empresa}</p>
                 </td>
                 <td className="py-4 px-6 max-w-[280px]">
+                  <div className="flex items-center gap-2 mb-1">
+                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${badge.color}`}>
+                        {badge.label}
+                     </span>
+                  </div>
                   <p className="font-bold text-sm truncate" title={oferta.titulo}>{oferta.titulo}</p>
-                  <p className="text-xs text-[var(--muted)] truncate mt-0.5" title={oferta.descripcion}>{oferta.descripcion}</p>
+                  <p className="text-xs text-[var(--muted)] line-clamp-2 mt-0.5" title={oferta.descripcion}>{oferta.descripcion}</p>
+                  
+                  {oferta.estado === 'Oferta rechazada' && oferta.justificacion_rechazo && (
+                     <p className="text-xs text-[#ba1a1a] mt-1 bg-red-50 p-1 rounded font-mono">Rechazo: {oferta.justificacion_rechazo}</p>
+                  )}
+
                   <p className="text-xs text-[var(--subtle)] mt-1.5 font-mono">
                     [{new Date(oferta.fecha_inicio).toLocaleDateString()} a {new Date(oferta.fecha_fin).toLocaleDateString()}]
                   </p>
@@ -74,4 +85,23 @@ function AprobarBoton({ id }: { id: string }) {
       {isPending ? "Ejecutando..." : "Aprobar"}
     </button>
   );
+}
+
+function getBadgeInfo(oferta: any) {
+  const currentDate = new Date("2026-04-11T00:00:00").getTime();
+  const inicio = new Date(oferta.fecha_inicio).getTime();
+  const fin = new Date(oferta.fecha_fin).getTime();
+
+  if (fin < currentDate) return { label: 'PASADA', color: 'bg-slate-100 text-slate-500 border-slate-200' };
+  
+  if (oferta.estado === 'Oferta rechazada') return { label: 'RECHAZADA', color: 'bg-red-100 text-[#ba1a1a] border-red-200' };
+  if (oferta.estado === 'Oferta descartada') return { label: 'DESCARTADA', color: 'bg-red-50 text-[#ba1a1a] border-red-200' };
+  if (oferta.estado === 'En espera de aprobación') return { label: 'EN ESPERA', color: 'bg-orange-100 text-orange-700 border-orange-200' };
+  
+  if (oferta.estado === 'Oferta aprobada') {
+     if (inicio > currentDate) return { label: 'FUTURA', color: 'bg-blue-100 text-blue-700 border-blue-200' };
+     return { label: 'ACTIVA', color: 'bg-[var(--green-bg)] text-[var(--green2)] border-[var(--green)]/20' };
+  }
+  
+  return { label: 'INDEFINIDA', color: 'bg-slate-100 text-slate-500 border-slate-200' };
 }

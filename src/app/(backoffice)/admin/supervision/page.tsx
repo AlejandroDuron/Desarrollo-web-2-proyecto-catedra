@@ -6,7 +6,7 @@ export default async function SupervisionPage() {
 
   const { data: rawEmpresas, error } = await supabase
     .from("empresas")
-    .select("id, nombre_empresa, codigo_empresa, porcentaje_comision, ofertas(precio_oferta, cupones(codigo_unico))")
+    .select("*, ofertas(*, cupones(*))")
     .order("nombre_empresa", { ascending: true });
 
   if (error) {
@@ -26,13 +26,18 @@ export default async function SupervisionPage() {
 
     if (emp.ofertas) {
       emp.ofertas.forEach((oferta: any) => {
+        console.log("=== DEBUG Oferta Estructura ===", { titulo: oferta.titulo, precio_oferta: oferta.precio_oferta, cuponesTotales: oferta.cupones?.length });
+
         const sold = oferta.cupones ? oferta.cupones.length : 0;
         cuponesVendidos += sold;
-        ingresosTotales += sold * oferta.precio_oferta;
+        
+        const precio = Number(oferta.precio_oferta) || 0;
+        ingresosTotales += (sold * precio);
       });
     }
 
-    const cargoServicio = ingresosTotales * (emp.porcentaje_comision / 100);
+    const comision = Number(emp.porcentaje_comision) || 0;
+    const cargoServicio = ingresosTotales * (comision / 100);
 
     return {
       id: emp.id,

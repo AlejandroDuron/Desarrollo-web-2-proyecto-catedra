@@ -4,10 +4,12 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useState, useEffect, useTransition } from "react";
 
 const TABS = [
-  { label: "En Espera", value: "En espera de aprobación" },
-  { label: "Aprobadas", value: "Oferta aprobada" },
-  { label: "Rechazadas", value: "Oferta rechazada" },
-  { label: "Descartadas", value: "Oferta descartada" }
+  { label: "En Espera", value: "espera" },
+  { label: "Futuras", value: "futuras" },
+  { label: "Activas", value: "activas" },
+  { label: "Pasadas", value: "pasadas" },
+  { label: "Rechazadas", value: "rechazadas" },
+  { label: "Descartadas", value: "descartadas" }
 ];
 
 export default function OfertasFiltros() {
@@ -16,7 +18,7 @@ export default function OfertasFiltros() {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const currentStatus = searchParams.get("status") || "En espera de aprobación";
+  const currentStatus = searchParams.get("status") || "espera";
   const currentQuery = searchParams.get("query") || "";
 
   const [searchTerm, setSearchTerm] = useState(currentQuery);
