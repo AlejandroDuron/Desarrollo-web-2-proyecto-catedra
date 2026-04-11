@@ -4,7 +4,7 @@ import { createSupabaseServerClient, requireRole } from "@/lib/supabase/server";
 
 export async function updatePasswordAction(formData: FormData) {
   try {
-    await requireRole("empleado");
+    await requireRole("admin_empresa");
     
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
