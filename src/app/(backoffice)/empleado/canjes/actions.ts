@@ -20,7 +20,7 @@ export async function verificarCupon(codigo: string) {
   if (error || !cupon) return { success: false, message: "El cupón no existe en el sistema." };
 
   if (cupon.estado_cupon !== "Disponible") {
-    return { success: false, message: `Este cupón ya tiene estado: ${cupon.estado_cupon}.` };
+    return { success: false, message: `Este cupón ya ha sido canjeado: ${cupon.estado_cupon}.` };
   }
 
   return { success: true, data: cupon };
