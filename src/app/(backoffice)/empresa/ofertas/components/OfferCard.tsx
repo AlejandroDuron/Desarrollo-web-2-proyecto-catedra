@@ -26,7 +26,7 @@ export default function OfferCard({ oferta }: { oferta: OfertaConMetricas }) {
   const badge       = BADGE[oferta.categoria];
   const isLow       = oferta.cupones_disponibles <= 10 && oferta.cupones_disponibles > 0;
   const dias        = diasRestantes(oferta.fecha_fin);
-  const showMetrics = oferta.categoria !== "en_espera" && oferta.categoria !== "descartadas";
+  const showMetrics = true;
 
   return (
     <div className="bg-white rounded-xl overflow-hidden border border-[#EDEEEF] hover:shadow-xl transition-all duration-300 group">

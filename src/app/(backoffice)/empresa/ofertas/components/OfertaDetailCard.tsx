@@ -6,128 +6,252 @@ import OfertaRechazadaActions from "./OfertaRechazadaActions";
 const fmtMoney = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString("es-SV", { day: "2-digit", month: "long", year: "numeric" });
+
 export default function OfertaDetailCard({ oferta }: { oferta: OfertaConMetricas }) {
   const descuento = oferta.precio_regular > 0
     ? Math.round((1 - oferta.precio_oferta / oferta.precio_regular) * 100)
     : null;
 
-  const isRechazada      = oferta.categoria === "rechazadas";
-  const isDescartada     = oferta.categoria === "descartadas";
+  const isRechazada       = oferta.categoria === "rechazadas";
+  const isDescartada      = oferta.categoria === "descartadas";
   const showJustificacion = (isRechazada || isDescartada) && oferta.justificacion_rechazo;
 
   return (
-    <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-[#EDEEEF]">
+    <div style={{
+      background: "white", borderRadius: 16, overflow: "hidden",
+      border: "1px solid #EDEEEF", boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    }}>
 
-      {/* Imagen */}
-      <div className={`relative aspect-[16/6] w-full overflow-hidden bg-[#f3f4f5] ${isRechazada || isDescartada ? "grayscale-[0.4]" : ""}`}>
+      {/* ── Imagen hero ── */}
+      <div style={{
+        position: "relative", width: "100%", aspectRatio: "21/6",
+        overflow: "hidden", background: "#f3f4f5",
+        filter: isRechazada || isDescartada ? "grayscale(0.5)" : "none",
+      }}>
         {oferta.image_url ? (
           <>
             <img
               src={oferta.image_url}
               alt={oferta.titulo}
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(to top, rgba(0,0,0,0.4), transparent)",
+            }} />
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#e1e3e4] text-5xl">
+          <div style={{
+            width: "100%", height: "100%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 48, color: "#e1e3e4",
+          }}>
             🏷️
           </div>
         )}
 
-        {(isRechazada || isDescartada) && (
-          <div className="absolute top-3 right-3">
-            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs shadow-md text-white
-              ${isRechazada ? "bg-[#ba1a1a]" : "bg-[#454935]"}`}>
-              ✕ {isRechazada ? "RECHAZADA" : "DESCARTADA"}
+        {isRechazada && (
+          <div style={{ position: "absolute", top: 16, right: 16 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "#ba1a1a", color: "white",
+              padding: "8px 16px", borderRadius: 999,
+              fontWeight: 700, fontSize: 13, boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            }}>
+              ✕ RECHAZADA
+            </div>
+          </div>
+        )}
+        {isDescartada && (
+          <div style={{ position: "absolute", top: 16, right: 16 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "#454935", color: "white",
+              padding: "8px 16px", borderRadius: 999,
+              fontWeight: 700, fontSize: 13,
+            }}>
+              ✕ DESCARTADA
             </div>
           </div>
         )}
       </div>
 
-      {/* Contenido */}
-      <div className="p-4 md:p-6 space-y-6">
+      {/* ── Contenido ── */}
+      <div style={{ padding: 32, display: "flex", flexDirection: "column", gap: 24 }}>
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-
-          {/* Texto */}
-          <div className="space-y-1.5 max-w-xl">
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#191c1d]">
+        {/* Título y precios */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 900, color: "#191c1d", margin: 0, lineHeight: 1.2, letterSpacing: "-0.02em" }}>
               {oferta.titulo}
             </h2>
             {oferta.descripcion && (
-              <p className="text-sm text-[#454935] leading-relaxed">
+              <p style={{ fontSize: 14, color: "#454935", marginTop: 8, lineHeight: 1.6, margin: "8px 0 0 0" }}>
                 {oferta.descripcion}
               </p>
             )}
           </div>
 
-          {/* Precio */}
-          <div className="shrink-0 md:text-right">
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
             {oferta.precio_regular > 0 && (
-              <p className="text-sm line-through text-[#9ea3a6]">
+              <p style={{ fontSize: 14, fontWeight: 700, textDecoration: "line-through", color: "#9ea3a6", margin: 0 }}>
                 {fmtMoney(oferta.precio_regular)}
               </p>
             )}
-
-            <p className="text-2xl md:text-3xl font-bold text-[#526600]">
+            <p style={{ fontSize: 32, fontWeight: 900, color: "#526600", margin: 0, letterSpacing: "-0.02em" }}>
               {fmtMoney(oferta.precio_oferta)}
             </p>
-
             {descuento && (
-              <span className="inline-block mt-1 px-2.5 py-0.5 bg-[#526600] text-white text-[10px] font-bold tracking-wide rounded-md">
+              <span style={{
+                display: "inline-block", marginTop: 8,
+                padding: "4px 12px", background: "#526600",
+                color: "white", fontWeight: 700, fontSize: 12,
+                letterSpacing: "0.1em", textTransform: "uppercase", borderRadius: 6,
+              }}>
                 {descuento}% OFF
               </span>
             )}
           </div>
         </div>
 
-        {/* Detalles */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-[#EDEEEF]">
+        {/* ── Datos principales + Justificación ── */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+          paddingTop: 24,
+          borderTop: "1px solid #EDEEEF",
+        }}>
 
-          {/* Izquierda */}
-          <div className="space-y-4">
+          {/* Columna izquierda */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+            {/* Vigencia — solo para no rechazadas/descartadas */}
+            {!isRechazada && !isDescartada && (
+              <div>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.12em", color: "#454935", margin: "0 0 8px 0",
+                }}>
+                  Vigencia
+                </p>
+                <InfoRow label="Fecha de inicio" value={fmtDate(oferta.fecha_inicio)} />
+                <InfoRow label="Fecha de fin"     value={fmtDate(oferta.fecha_fin)} />
+                <InfoRow label="Límite de uso"    value={fmtDate(oferta.fecha_limite_uso)} />
+              </div>
+            )}
+
+            {/* Cupones — solo para no rechazadas/descartadas */}
+            {!isRechazada && !isDescartada && (
+              <div>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.12em", color: "#454935", margin: "0 0 8px 0",
+                }}>
+                  Cupones
+                </p>
+                <InfoRow label="Stock total"      value={oferta.stock.toLocaleString("en-US")} />
+                {oferta.cantidad_limite != null && (
+                  <InfoRow label="Límite por cliente" value={String(oferta.cantidad_limite)} />
+                )}
+                <InfoRow label="Vendidos"         value={oferta.cupones_vendidos.toLocaleString("en-US")} />
+                <InfoRow label="Disponibles"      value={oferta.cupones_disponibles.toLocaleString("en-US")} />
+                <InfoRow label="Ingresos totales" value={fmtMoney(oferta.ingresos_totales)} />
+                <InfoRow
+                  label={`Comisión (${oferta.porcentaje_comision}%)`}
+                  value={fmtMoney(oferta.cargo_servicio)}
+                />
+              </div>
+            )}
+
+            {/* Términos y condiciones */}
             {oferta.otros_detalles && (
               <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#6b7280] mb-1">
-                  Términos y condiciones
-                </h3>
-                <p className="text-sm text-[#454935] leading-relaxed whitespace-pre-line">
+                <p style={{
+                  fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.12em", color: "#454935", margin: "0 0 8px 0",
+                }}>
+                  Términos y Condiciones
+                </p>
+                <p style={{ fontSize: 13, color: "#454935", lineHeight: 1.7, whiteSpace: "pre-line", margin: 0 }}>
                   {oferta.otros_detalles}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Derecha */}
-          {showJustificacion && (
-            <div className="p-4 rounded-xl bg-[#ffdad6]/40 border border-[#ba1a1a]/20">
-              <h3 className="font-semibold text-sm text-[#ba1a1a] mb-2 flex items-center gap-2">
-                ⚠️ Justificación
-              </h3>
+          {/* Columna derecha */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
-              <p className="text-sm text-[#454935] italic leading-relaxed">
-                "{oferta.justificacion_rechazo}"
-              </p>
-
-              <div className="mt-3 pt-3 border-t border-[#ba1a1a]/10 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#ba1a1a]/10 flex items-center justify-center text-xs">
-                  🔒
-                </div>
-                <span className="text-[11px] font-medium text-[#191c1d]">
-                  Admin
-                </span>
+            {/* Vigencia para rechazadas/descartadas */}
+            {(isRechazada || isDescartada) && (
+              <div>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.12em", color: "#454935", margin: "0 0 8px 0",
+                }}>
+                  Vigencia
+                </p>
+                <InfoRow label="Fecha de inicio" value={fmtDate(oferta.fecha_inicio)} />
+                <InfoRow label="Fecha de fin"     value={fmtDate(oferta.fecha_fin)} />
+                <InfoRow label="Límite de uso"    value={fmtDate(oferta.fecha_limite_uso)} />
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Justificación */}
+            {showJustificacion && (
+              <div style={{
+                padding: 20, borderRadius: 12,
+                background: "rgba(255, 218, 214, 0.3)",
+                border: "1px solid rgba(186, 26, 26, 0.2)",
+              }}>
+                <h3 style={{
+                  fontSize: 12, fontWeight: 900, textTransform: "uppercase",
+                  letterSpacing: "0.08em", color: "#ba1a1a", margin: "0 0 12px 0",
+                }}>
+                  Justificación del Rechazo
+                </h3>
+                <p style={{ fontSize: 13, color: "#454935", lineHeight: 1.7, fontStyle: "italic", margin: 0 }}>
+                  "{oferta.justificacion_rechazo}"
+                </p>
+                <div style={{
+                  marginTop: 16, paddingTop: 16,
+                  borderTop: "1px solid rgba(186,26,26,0.1)",
+                  display: "flex", alignItems: "center", gap: 10,
+                }}>
+                  <p style={{
+                    fontSize: 11, fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.1em", color: "#191c1d", margin: 0,
+                  }}>
+                    Admin de Plataforma
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Acciones */}
+        {/* Acciones — solo rechazadas */}
         {isRechazada && (
           <OfertaRechazadaActions oferta={oferta} />
         )}
+
       </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "space-between",
+      alignItems: "center", padding: "8px 0",
+      borderBottom: "1px solid #f3f4f5",
+    }}>
+      <span style={{ fontSize: 13, color: "#454935" }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: "#191c1d" }}>{value}</span>
     </div>
   );
 }

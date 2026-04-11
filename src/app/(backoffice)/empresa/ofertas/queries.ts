@@ -256,20 +256,20 @@ export async function insertOferta(payload: {
 // ─── Descartar oferta ─────────────────────────────────────────────────────────
 
 export async function updateOfertaDescartada(
-  ofertaId:   string,
-  id_empresa: string
-) {
-  const supabase = await createSupabaseServerClient();
-
-  const { error } = await supabase
-    .from("ofertas")
-    .update({ estado: "Oferta descartada" as const })
-    .eq("id", ofertaId)
-    .eq("id_empresa", id_empresa)
-    .eq("estado", "En espera de aprobación");
-
-  if (error) throw new Error(error.message);
-}
+    ofertaId:   string,
+    id_empresa: string
+  ) {
+    const supabase = await createSupabaseServerClient();
+  
+    const { error } = await supabase
+      .from("ofertas")
+      .update({ estado: "Oferta descartada" as const })
+      .eq("id", ofertaId)
+      .eq("id_empresa", id_empresa)
+      .eq("estado", "Oferta rechazada"); 
+  
+    if (error) throw new Error(error.message);
+  }
 
 export async function updateOfertaRechazada(
     ofertaId:   string,
