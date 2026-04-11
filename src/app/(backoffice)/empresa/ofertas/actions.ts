@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/supabase/server";
-import { ofertaSchema, CONTEO_VACIO, type CategoriaOferta, type OfertaConMetricas } from "./schema";
+import {
+  ofertaSchema,
+  CONTEO_VACIO,
+  type CategoriaOferta,
+  type OfertaConMetricas,
+} from "./schema";
 import {
   getEmpresa,
   getOfertasByEmpresa,
@@ -21,8 +26,8 @@ export async function getOfertasConMetricas(): Promise<{
   nombre_empresa: string;
   conteos:        Record<CategoriaOferta, number>;
 }> {
-  const { empleado } = await requireRole("admin_empresa");
-  const id_empresa   = empleado.id_empresa!;
+  const { empleado }   = await requireRole("admin_empresa");
+  const id_empresa     = empleado.id_empresa!;
 
   const [empresa, ofertas] = await Promise.all([
     getEmpresa(id_empresa),
@@ -73,6 +78,7 @@ export async function crearOferta(formData: FormData) {
       fecha_fin:        parsed.data.fecha_fin,
       fecha_limite_uso: parsed.data.fecha_limite_uso,
       image_url:        parsed.data.imagen_url || null,
+      cantidad_limite:  parsed.data.cantidad_limite ?? null,
     });
   } catch (e) {
     return { error: { server: [(e as Error).message] } };

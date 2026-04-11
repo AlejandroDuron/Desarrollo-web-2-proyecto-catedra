@@ -54,16 +54,11 @@ export function categorizarOferta(oferta: {
 export async function getEmpresa(id_empresa: string) {
   const supabase = await createSupabaseServerClient();
 
-  console.log(">>> Buscando empresa con id:", id_empresa);
-
   const { data, error } = await supabase
     .from("empresas")
     .select("nombre_empresa, porcentaje_comision")
     .eq("id", id_empresa)
     .single();
-
-    console.log(">>> data:", JSON.stringify(data));
-  console.log(">>> error:", JSON.stringify(error));
 
   if (error || !data) throw new Error("Empresa no encontrada.");
 
@@ -99,6 +94,73 @@ export async function getOfertasByEmpresa(
   if (error) throw new Error(error.message);
   return (data ?? []) as OfertaRow[];
 }
+
+// ─── Obtener una oferta por ID (validando empresa) ───────────────────────────
+
+export async function getOfertaById(
+  id:         string,
+  id_empresa: string
+): Promise<OfertaRow> {
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("ofertas")
+    .select(`
+      id, titulo, descripcion, otros_detalles, image_url,
+      precio_regular, precio_oferta,
+      fecha_inicio, fecha_fin, fecha_limite_uso,
+      cantidad_limite, stock, estado, justificacion_rechazo
+    `)
+    .eq("id", id)
+    .eq("id_empresa", id_empresa)
+    .single();
+
+  if (error || !data) throw new Error("Oferta no encontrada.");
+  return data as OfertaRow;
+}
+
+export async function getOfertaConMetricasById(
+    id:         string,
+    id_empresa: string
+  ): Promise<OfertaConMetricas> {
+    const [ofertaRaw, empresa] = await Promise.all([
+      getOfertaById(id, id_empresa),
+      getEmpresa(id_empresa),
+    ]);
+   
+    const cuponesMap          = await getCuponesVendidosMap([id]);
+    const cupones_vendidos     = cuponesMap[id] ?? 0;
+    const cupones_disponibles  = Math.max(0, Number(ofertaRaw.stock ?? 0) - cupones_vendidos);
+    const ingresos_totales     = cupones_vendidos * Number(ofertaRaw.precio_oferta);
+    const cargo_servicio       = ingresos_totales * (empresa.porcentaje_comision / 100);
+   
+    return {
+      id:                    ofertaRaw.id,
+      titulo:                ofertaRaw.titulo,
+      descripcion:           ofertaRaw.descripcion,
+      otros_detalles:        ofertaRaw.otros_detalles,
+      image_url:             ofertaRaw.image_url,
+      precio_regular:        Number(ofertaRaw.precio_regular),
+      precio_oferta:         Number(ofertaRaw.precio_oferta),
+      fecha_inicio:          ofertaRaw.fecha_inicio,
+      fecha_fin:             ofertaRaw.fecha_fin,
+      fecha_limite_uso:      ofertaRaw.fecha_limite_uso,
+      cantidad_limite:       ofertaRaw.cantidad_limite != null ? Number(ofertaRaw.cantidad_limite) : null,
+      stock:                 Number(ofertaRaw.stock ?? 0),
+      estado:                ofertaRaw.estado as EstadoOferta,
+      justificacion_rechazo: ofertaRaw.justificacion_rechazo,
+      cupones_vendidos,
+      cupones_disponibles,
+      ingresos_totales,
+      cargo_servicio,
+      porcentaje_comision:   empresa.porcentaje_comision,
+      categoria:             categorizarOferta({
+        estado:       ofertaRaw.estado as EstadoOferta,
+        fecha_inicio: ofertaRaw.fecha_inicio,
+        fecha_fin:    ofertaRaw.fecha_fin,
+      }),
+    };
+  }
 
 // ─── Contar cupones vendidos ──────────────────────────────────────────────────
 
@@ -179,6 +241,7 @@ export async function insertOferta(payload: {
   fecha_fin:        string;
   fecha_limite_uso: string;
   image_url:        string | null;
+  cantidad_limite:  number | null;
 }) {
   const supabase = await createSupabaseServerClient();
 

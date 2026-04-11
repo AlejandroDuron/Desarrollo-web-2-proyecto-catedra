@@ -90,9 +90,9 @@ export async function getEmpleadoByUserId(userId: string) {
   const adminClient = createSupabaseAdminClient();
   const { data, error } = await adminClient
     .from("empleados")
-    .select("id, rol, id_empresa, activo")
+    .select("*")
     .eq("id", userId)
-    .maybeSingle();
+    .maybeSingle();                                                              
 
   if (error) {
     throw new Error(`Failed to load employee profile: ${error.message}`);

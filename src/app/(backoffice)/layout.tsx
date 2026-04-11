@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import { Zap} from 'lucide-react'
 import { logoutAction } from "@/lib/auth/actions";
 import { requireAuthenticatedEmployee } from "@/lib/supabase/server";
 
@@ -11,25 +11,6 @@ const securityPaths = {
   empleado: "/empleado/seguridad",
 } as const;
 
-function BrandIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-[18px] w-[18px]"
-      fill="none"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M13 2L4 14H11L10 22L20 9H13L13 2Z"
-        stroke="var(--green)"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.5"
-      />
-    </svg>
-  );
-}
 
 export default async function DashboardLayout({
   children,
@@ -42,8 +23,8 @@ export default async function DashboardLayout({
   return (
     <>
       <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#191C1D]/10 bg-[#F8F9FA]/90 px-8 backdrop-blur-xl">
-        <Link className="logo" href="/">
-          <BrandIcon />
+        <Link href="/" className="logo">
+          <Zap size={18} color="var(--green)" strokeWidth={2.5} />
           <span>La Cuponera</span>
         </Link>
 

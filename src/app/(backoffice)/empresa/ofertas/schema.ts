@@ -43,12 +43,12 @@ export interface OfertaConMetricas {
 }
 
 export const CONTEO_VACIO: Record<CategoriaOferta, number> = {
-  en_espera:        0,
+  en_espera:         0,
   aprobadas_futuras: 0,
-  activas:          0,
-  pasadas:          0,
-  rechazadas:       0,
-  descartadas:      0,
+  activas:           0,
+  pasadas:           0,
+  rechazadas:        0,
+  descartadas:       0,
 };
 
 // ─── Zod schema para crear oferta ─────────────────────────────────────────────
@@ -65,6 +65,7 @@ export const ofertaSchema = z
     fecha_fin:        z.string().min(1, "La fecha de fin es requerida"),
     fecha_limite_uso: z.string().min(1, "La fecha límite de uso es requerida"),
     imagen_url:       z.string().url("La URL de imagen no es válida").optional().or(z.literal("")),
+    cantidad_limite:  z.coerce.number().int().positive("Debe ser mayor a 0").optional(),
   })
   .refine((d) => d.precio_oferta < d.precio_regular, {
     message: "El precio de oferta debe ser menor al precio regular",
@@ -92,4 +93,5 @@ export const ofertaInitialValues: OfertaFormValues = {
   fecha_fin:        "",
   fecha_limite_uso: "",
   imagen_url:       "",
+  cantidad_limite:  undefined,
 };

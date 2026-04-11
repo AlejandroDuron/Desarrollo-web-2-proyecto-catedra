@@ -1,10 +1,10 @@
-export default function EmpleadoSeguridadPage() {
+import { PasswordForm } from "./components/password-form";
+
+export default function SeguridadPage() {
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-      <h3 className="text-2xl font-semibold text-slate-900">Seguridad</h3>
-      <p className="mt-2 text-sm text-slate-600">
-        Placeholder para credenciales, sesiones y seguridad del empleado.
-      </p>
-    </section>
+    <main className="flex-grow pb-20 px-6 max-w-7xl mx-auto w-full pt-12 font-body">
+      <h1 className="text-5xl font-black font-headline tracking-tighter uppercase mb-8">Seguridad</h1>
+      <PasswordForm />
+    </main>
   );
 }
