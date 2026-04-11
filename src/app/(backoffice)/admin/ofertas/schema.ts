@@ -1,15 +1,5 @@
-export type OfertaEstado = "pendiente" | "aprobada" | "rechazada";
+import { z } from "zod";
 
-export interface OfertaRevisionValues {
-  titulo: string;
-  empresa: string;
-  estado: OfertaEstado;
-  comentario: string;
-}
-
-export const ofertaRevisionInitialValues: OfertaRevisionValues = {
-  titulo: "",
-  empresa: "",
-  estado: "pendiente",
-  comentario: "",
-};
+export const rechazoSchema = z.object({
+  justificacion_rechazo: z.string().min(15, "La justificación debe contener los motivos técnicos (mínimo 15 caracteres) para descartar el material."),
+});

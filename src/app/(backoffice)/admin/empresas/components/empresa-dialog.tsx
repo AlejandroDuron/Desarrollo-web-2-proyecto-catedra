@@ -1,4 +1,4 @@
-import { EmpresaForm } from "./empresa-form";
+import EmpresaForm from "./empresa-form";
 
 export function EmpresaDialog() {
   return (
@@ -9,7 +9,7 @@ export function EmpresaDialog() {
           Placeholder para dialogo o drawer de creacion.
         </p>
       </div>
-      <EmpresaForm />
+      <EmpresaForm rubrosDisponibles={[]} />
     </section>
   );
 }

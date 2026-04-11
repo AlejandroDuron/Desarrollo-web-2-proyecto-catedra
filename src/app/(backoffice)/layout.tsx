@@ -3,19 +3,7 @@ import Link from "next/link";
 import { logoutAction } from "@/lib/auth/actions";
 import { requireAuthenticatedEmployee } from "@/lib/supabase/server";
 
-const navLinks: Record<string, { label: string; href: string }[]> = {
-  admin_general: [
-    { label: "Empresas", href: "/admin/empresas" },
-    { label: "Rubros", href: "/admin/rubros" },
-    { label: "Ofertas", href: "/admin/ofertas" },
-    { label: "Clientes", href: "/admin/clientes" },
-  ],
-  admin_empresa: [
-    { label: "Ofertas", href: "/empresa/ofertas" },
-    { label: "Empleados", href: "/empresa/empleados" },
-  ],
-  empleado: [{ label: "Canjes", href: "/empleado/canjes" }],
-};
+import { NavigationLinks } from "./components/navigation-links";
 
 const securityPaths = {
   admin_general: "/admin/seguridad",
@@ -49,7 +37,6 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, empleado } = await requireAuthenticatedEmployee();
-  const links = navLinks[empleado.rol] ?? [];
   const securityPath = securityPaths[empleado.rol];
 
   return (
@@ -61,17 +48,7 @@ export default async function DashboardLayout({
         </Link>
 
         <div className="flex items-center gap-6">
-          <div className="hidden gap-1 md:flex">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="rounded-lg px-4 py-2 text-sm font-bold text-[#191C1D] transition-colors hover:bg-[#EDEEEF]"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          <NavigationLinks rol={empleado.rol} />
 
           <div className="flex items-center gap-4">
             <div className="text-right">

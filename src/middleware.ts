@@ -1,4 +1,4 @@
-﻿import { createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -18,12 +18,12 @@ function isPublicAuthPath(pathname: string) {
   );
 }
 
-async function hasInternalAccess(userId: string) {
+async function getAccessDetails(userId: string) {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   if (!serviceRoleKey || !supabaseUrl) {
-    return false;
+    return { active: false, role: null };
   }
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey, {
@@ -40,15 +40,10 @@ async function hasInternalAccess(userId: string) {
     .maybeSingle();
 
   if (error || !data) {
-    return false;
+    return { active: false, role: null };
   }
 
-  return (
-    data.activo &&
-    (data.rol === "admin_general" ||
-      data.rol === "admin_empresa" ||
-      data.rol === "empleado")
-  );
+  return { active: data.activo, role: data.rol };
 }
 
 export async function middleware(request: NextRequest) {
@@ -88,11 +83,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isPublicAuthPath(pathname)) {
-    const canAccessBackoffice = await hasInternalAccess(user.id);
+  if (user) {
+    if (isPublicAuthPath(pathname) || isProtectedPath(pathname)) {
+      const access = await getAccessDetails(user.id);
+      const isInternalRole = access.active && (access.role === "admin_general" || access.role === "admin_empresa" || access.role === "empleado");
 
-    if (canAccessBackoffice) {
-      return NextResponse.redirect(new URL("/", request.url));
+      if (isPublicAuthPath(pathname) && isInternalRole) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+
+      if (isProtectedPath(pathname)) {
+        if (pathname.startsWith("/admin") && access.role !== "admin_general") {
+          return NextResponse.redirect(new URL("/login", request.url));
+        }
+      }
     }
   }
 
