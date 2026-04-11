@@ -45,7 +45,6 @@ export default async function EmpresasPage({
           <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
             Empresas Globales
           </h1>
-          <p className="text-[var(--muted)] text-sm">Gestiona el catálogo de organizaciones dentro de La Cuponera.</p>
         </div>
         <EmpresaForm rubrosDisponibles={rubrosDisponibles} />
       </div>

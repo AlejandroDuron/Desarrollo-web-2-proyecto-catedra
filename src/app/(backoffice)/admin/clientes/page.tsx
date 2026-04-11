@@ -47,7 +47,6 @@ export default async function ClientesPage({
           <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
             Control de Clientes
           </h1>
-          <p className="text-[var(--muted)] text-sm">Base general de consumidores y auditoría interna de historiales de compra.</p>
         </div>
       </div>
 
@@ -85,7 +84,7 @@ export default async function ClientesPage({
                       {cliente.dui || "S/DUI"}
                     </td>
                     <td className="py-4 px-6 text-right">
-                       <ClienteHistorial cliente={cliente} />
+                      <ClienteHistorial cliente={cliente} />
                     </td>
                   </tr>
                 ))}

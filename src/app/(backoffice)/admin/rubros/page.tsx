@@ -40,7 +40,6 @@ export default async function RubrosPage({
           <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
             Rubros
           </h1>
-          <p className="text-[var(--muted)] text-sm">Gestiona las categorías de empresas registradas.</p>
         </div>
         <RubroForm />
       </div>

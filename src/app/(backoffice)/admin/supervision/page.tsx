@@ -86,7 +86,6 @@ export default async function SupervisionPage({
         <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
           Supervisión Financiera
         </h1>
-        <p className="text-[var(--muted)] text-sm">Resumen de ventas brutas e inteligencia de recaudación por comisiones activas.</p>
       </div>
 
       {/* Stats Cards */}

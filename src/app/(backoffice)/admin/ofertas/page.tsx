@@ -91,7 +91,6 @@ export default async function OfertasPage({
           <h1 className="text-4xl font-black mb-1" style={{ fontFamily: "var(--font-display)" }}>
             Promociones y Ofertas
           </h1>
-          <p className="text-[var(--muted)] text-sm">Validación técnica e historial de ofertas vinculadas al backoffice.</p>
         </div>
       </div>
 
@@ -106,11 +105,11 @@ export default async function OfertasPage({
             {query
               ? `No se encontraron ofertas coincidiendo con "${query}".`
               : filter === "futuras" ? "No hay ofertas programadas para el futuro."
-              : filter === "activas" ? "No hay promociones en circulación actualmente."
-              : filter === "pasadas" ? "No hay ofertas caducadas en el archivo."
-              : filter === "rechazadas" ? "No hay historial de rechazos."
-              : filter === "descartadas" ? "No hay ofertas descartadas."
-              : "No hay ofertas pendientes de valoración."}
+                : filter === "activas" ? "No hay promociones en circulación actualmente."
+                  : filter === "pasadas" ? "No hay ofertas caducadas en el archivo."
+                    : filter === "rechazadas" ? "No hay historial de rechazos."
+                      : filter === "descartadas" ? "No hay ofertas descartadas."
+                        : "No hay ofertas pendientes de valoración."}
           </p>
         </div>
       ) : (
