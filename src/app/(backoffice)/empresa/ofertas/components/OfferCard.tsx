@@ -33,7 +33,7 @@ export default function OfferCard({
     const isLow = disponibles <= 10;
 
     return (
-        <div className="bg-white rounded-xl overflow-hidden border border-[#EDEEEF] hover:shadow-xl transition-all duration-300 group">
+        <div className="card">
             <div className="relative h-48 overflow-hidden">
                 <img
                     src={imagenUrl}
@@ -47,7 +47,7 @@ export default function OfferCard({
                 </div>
             </div>
 
-            <div className="p-6 ">
+            <div className="p-6">
                 <div className="mb-4">
                     <h3 className="text-lg font-bold leading-tight mb-1 text-[#191C1D]">{titulo}</h3>
                     <p className="text-xs text-[#454935]">
@@ -95,7 +95,7 @@ export default function OfferCard({
 
                 </div>
 
-                <button className="w-full mt-6 py-3 bg-[#D9FF50] text-[#171E00] text-xs font-bold uppercase tracking-widest rounded-lg hover:opacity-90 transition-opacity">
+                <button className="w-full mt-6 py-3 bg-(--lightgreen) text-[#171E00] text-xs font-bold uppercase tracking-widest rounded-lg hover:opacity-90 transition-opacity">
                     Ver Oferta
                 </button>
             </div>

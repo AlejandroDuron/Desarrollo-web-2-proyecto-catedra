@@ -10,6 +10,7 @@
   --muted:      #888888;
   --subtle:     #444444;
   --text:       #111111;
+  --lightgreen: #b6f542;
   --green:      #84cc16;
   --green2:     #65a30d;
   --green-bg:   rgba(132, 204, 22, 0.10);
@@ -27,7 +28,6 @@
 }
 
 /* ─── RESET ──────────────────────────────────────────────── */
-
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
@@ -48,3 +48,23 @@ ul { list-style: none; }
 ::-webkit-scrollbar-track { background: var(--surface); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition);
+}
+.card:hover { border-color: var(--lightgreen); transform: translateY(-2px); }

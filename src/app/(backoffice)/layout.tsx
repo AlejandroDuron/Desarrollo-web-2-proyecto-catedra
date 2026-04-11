@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Zap} from 'lucide-react'
 
 const ROL_ACTIVO = "admin_empresa";
 
@@ -28,8 +29,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <>
       <nav className="fixed top-0 w-full z-50 h-16 flex items-center justify-between px-8 bg-[#F8F9FA]/90 backdrop-blur-xl border-b border-[#191C1D]/10">
-        <Link href="/" className="text-2xl font-black tracking-tighter text-[#191C1D]">
-          La Cuponera
+        <Link href="/" className="logo">
+          <Zap size={18} color="var(--green)" strokeWidth={2.5} />
+          <span>La Cuponera</span>
         </Link>
 
         <div className="flex items-center gap-6">

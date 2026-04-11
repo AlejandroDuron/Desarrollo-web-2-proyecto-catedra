@@ -3,6 +3,7 @@ import OffersHeader from "./components/OffersHeader";
 import MetricsPanel from "./components/MetricsPanel";
 import OffersTabs from "./components/OffersTabs";
 import OffersGrid from "./components/OffersGrid";
+import Button from "./components/AddButton";
 
 // ── Datos de ejemplo (reemplazar por fetch a Supabase) ──────────────
 const EMPRESA_NOMBRE = "Technova Solutions";
@@ -58,7 +59,7 @@ const OFERTAS = [
 export default function EmpresaOfertasPage() {
   return (
     <div className="px-8 py-10 max-w-7xl mx-auto">
-      <OffersHeader empresaNombre={EMPRESA_NOMBRE} />
+      <OffersHeader empresaNombre={EMPRESA_NOMBRE}/>
       <MetricsPanel metrics={METRICS} />
 
       {/* Tabs y Grid son Client Components por interactividad */}
