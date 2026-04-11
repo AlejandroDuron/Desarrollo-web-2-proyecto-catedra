@@ -1,17 +1,14 @@
-import { EmpleadoForm } from "./components/empleado-form";
-import { EmpleadoTable } from "./components/empleado-table";
+import { getEmpleados } from "./actions";
+import EmpleadosHeader from "./components/EmpleadosHeader";
+import EmpleadoTable   from "./components/EmpleadoTable";
 
-export default function EmpleadosPage() {
+export default async function EmpleadosPage() {
+  const empleados = await getEmpleados();
+
   return (
-    <section className="space-y-6">
-      <div>
-        <h3 className="text-2xl font-semibold text-slate-900">Empleados</h3>
-        <p className="text-sm text-slate-600">
-          Administracion base de empleados de la empresa.
-        </p>
-      </div>
-      <EmpleadoForm />
-      <EmpleadoTable />
-    </section>
+    <div className="px-4 md:px-8 py-10 max-w-7xl mx-auto">
+      <EmpleadosHeader total={empleados.length} />
+      <EmpleadoTable empleados={empleados} />
+    </div>
   );
 }
