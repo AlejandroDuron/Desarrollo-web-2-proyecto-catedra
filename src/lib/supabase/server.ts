@@ -68,7 +68,7 @@ export async function createSupabaseServerClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // In some server render contexts cookies are read-only.
+          
         }
       },
     },
